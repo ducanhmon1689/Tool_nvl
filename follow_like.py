@@ -22,7 +22,7 @@ def get_device_id():
     try:
         result = subprocess.run(['getprop', 'ro.serialno'], capture_output=True, text=True, check=True)
         device_id = result.stdout.strip()
-        log(f"Device ID: {device_id}")
+        #log(f"Device ID: {device_id}")
         return device_id
     except Exception as e:
         log(f"Lỗi khi lấy device_id: {str(e)}")
@@ -36,11 +36,11 @@ def send_follow_request(url='http://10.0.0.2:8000/follow'):
             return "Error: Cannot get device_id"
         headers = {'Content-Type': 'application/json'}
         data = {'task': 'FOLLOW', 'device_id': device_id}
-        log(f"Đang gửi yêu cầu đến {url} với device_id: {device_id}")
+        #log(f"Đang gửi yêu cầu đến {url} với device_id: {device_id}")
         response = requests.post(url, json=data, headers=headers, timeout=20)
         response.raise_for_status()
         result = response.json()
-        log(f"Kết quả từ server: {result}")
+        #log(f"Kết quả từ server: {result}")
         return result.get('result', 'Error: No result')
     except Exception as e:
         log(f"Lỗi khi gửi yêu cầu: {str(e)}")
