@@ -21,19 +21,22 @@ from time import sleep
 from datetime import datetime
 from time import strftime
 
-# Import the send_follow_request function from follow_like.py
-# Make sure follow_like.py is in the same directory or accessible via PYTHONPATH
-try:
-    from follow_like import send_follow_request, log as follow_like_log
-except ImportError:
-    print(f"{red}Lỗi: Không thể nhập 'send_follow_request' hoặc 'log' từ 'follow_like.py'. "
-          f"Vui lòng đảm bảo 'follow_like.py' nằm cùng thư mục.{trang}")
-    sys.exit(1)
-
+# Khai báo biến toàn cục ở đây
 total = 0
 may = 'mb' if platform[0:3] == 'lin' else 'pc'
-follow_error_count = 0 # Counter for consecutive follow errors
-MAX_FOLLOW_ERRORS = 5 # Maximum allowed consecutive follow errors
+follow_error_count = 0 # Biến đếm lỗi follow chung liên tiếp
+unfollow_detected_count = 0 # Biến đếm "Nhả follow" liên tiếp
+MAX_FOLLOW_ERRORS = 5 # Giới hạn lỗi follow chung
+MAX_UNFOLLOW_DETECTED = 5 # Giới hạn "Nhả follow" liên tiếp
+
+# Import the send_follow_request function from follow_like.py
+try:
+    # Không import log từ follow_like nữa để tránh ghi log chi tiết không mong muốn
+    from follow_like import send_follow_request
+except ImportError:
+    print(f"{red}Lỗi: Không thể nhập 'send_follow_request' từ 'follow_like.py'. "
+          f"Vui lòng đảm bảo 'follow_like.py' nằm cùng thư mục.{trang}")
+    sys.exit(1)
 
 def banner():
     os.system("cls" if os.name == "nt" else "clear")
@@ -128,7 +131,7 @@ def delay(dl):
 
 def chuyen(link, may):
     global follow_error_count
-    follow_like_log(f"Đang cố gắng mở liên kết: {link}")
+    global unfollow_detected_count # Khai báo biến toàn cục
 
     # Mở link trước
     if may == 'mb':
@@ -143,22 +146,40 @@ def chuyen(link, may):
 
     # Bây giờ, đợi script follow_like hoàn thành nhiệm vụ
     if "tiktok.com" in link or "tiktoknow://" in link:
-        follow_like_log("Đang đợi follow_like.py gửi yêu cầu follow và trả về kết quả...")
+        # Gọi hàm send_follow_request từ follow_like.py
+        # Nó sẽ tự động ghi log các bước của nó và trả về kết quả cuối cùng
         follow_result = send_follow_request()
-        if "Error" in follow_result:
-            follow_like_log(f"Yêu cầu follow thất bại: {follow_result}")
+
+        if follow_result == "Nhả follow":
+            unfollow_detected_count += 1
+            follow_error_count = 0 # Reset lỗi chung khi phát hiện unfollow
+            print(f"{red}Nhả follow! Liên tiếp: {unfollow_detected_count}/{MAX_UNFOLLOW_DETECTED}{trang}")
+            if unfollow_detected_count >= MAX_UNFOLLOW_DETECTED:
+                print(f"{red}Đã phát hiện nhả follow {MAX_UNFOLLOW_DETECTED} lần liên tiếp. Dừng bot.{trang}")
+                sys.exit(1) # Thoát bot
+        elif follow_result == "Follow ok":
+            print(f"{luc}Follow ok!{trang}") # Hiển thị kết quả đơn giản
+            follow_error_count = 0 # Reset lỗi chung khi thành công
+            unfollow_detected_count = 0 # Reset lỗi nhả follow khi thành công
+        elif isinstance(follow_result, str) and follow_result.startswith("Error:"):
             follow_error_count += 1
-            print(f"{red}Yêu cầu follow thất bại. Lỗi liên tiếp: {follow_error_count}/{MAX_FOLLOW_ERRORS}{trang}")
+            unfollow_detected_count = 0 # Reset lỗi nhả follow khi có lỗi chung khác
+            print(f"{red}Yêu cầu follow thất bại (Lỗi chung): {follow_result}. Liên tiếp: {follow_error_count}/{MAX_FOLLOW_ERRORS}{trang}")
             if follow_error_count >= MAX_FOLLOW_ERRORS:
                 print(f"{red}Đã đạt số lỗi follow liên tiếp tối đa ({MAX_FOLLOW_ERRORS}). Dừng bot.{trang}")
                 sys.exit(1) # Thoát bot
-        else:
-            follow_like_log(f"Yêu cầu follow thành công: {follow_result}")
-            follow_error_count = 0 # Đặt lại số lỗi về 0 khi thành công
+        else: # Xử lý các trường hợp phản hồi không mong muốn hoặc không xác định
+            follow_error_count += 1
+            unfollow_detected_count = 0
+            print(f"{red}Yêu cầu follow thất bại (Phản hồi không rõ): {follow_result}. Liên tiếp: {follow_error_count}/{MAX_FOLLOW_ERRORS}{trang}")
+            if follow_error_count >= MAX_FOLLOW_ERRORS:
+                print(f"{red}Đã đạt số lỗi follow liên tiếp tối đa ({MAX_FOLLOW_ERRORS}). Dừng bot.{trang}")
+                sys.exit(1) # Thoát bot
 
 def main():
     dem=0
     global follow_error_count
+    global unfollow_detected_count
     banner()
     while True:
         if os.path.exists('configtds.txt'):
@@ -284,7 +305,7 @@ def main():
                                         bongoc(14)
             if ntool==1 or ntool==2:break
             # Nhiệm vụ Follow (chính)
-            if '2' in nhiem_vu: # Luôn được chọn vì nhiem_vu = '2'
+            if '2' in nhiem_vu:
                 listfollow = tds.get_job('tiktok_follow')
                 if listfollow == False:
                     print(red+'Không Get Được Nhiệm Vụ Follow              ', end = '\r');sleep(2); print('                                                        ', end = '\r')
@@ -318,8 +339,8 @@ def main():
                                 dem+=1
                                 tg=datetime.now().strftime('%H:%M:%S')
                                 print(f'{vang}[{trang}{dem}{vang}] {red}| {lam}{tg} {red}| {Colorate.Horizontal(Colors.yellow_to_red, "FOLLOW")} {red}| {trang}{id} {red}|')
-                                delay(dl) # Sử dụng giá trị dl mặc định là 10 giây
-                                if dem % nv_nhan == 0: # Sử dụng giá trị nv_nhan mặc định là 8
+                                delay(dl)
+                                if dem % nv_nhan == 0:
                                     nhan = tds.nhan_xu('TIKTOK_FOLLOW_API', 'TIKTOK_FOLLOW')
                                     if nhan == 0:
                                         print(luc+'Nhận Xu Thất Bại Acc Tiktok Của Bạn Ổn Chứ ')
@@ -335,11 +356,11 @@ def main():
                                             break
                                         bongoc(14)
             if ntool==1 or ntool==2:break
-            # Nhiệm vụ Follow Tiktok Now (giữ nguyên logic cũ nếu cần)
+            # Nhiệm vụ Follow Tiktok Now
             if '3' in nhiem_vu:
                 listfollow = tds.get_job('tiktok_follow') # Có thể cần get job riêng cho Tiktok Now nếu TDS có API riêng
                 if listfollow == False:
-                    print(red+'Không Get Được Nhiệm Vụ Follow               ', end = '\r');sleep(2); print('                                                        ', end = '\r')
+                    print(red+'Không Get Được Nhiệm Vụ Follow              ', end = '\r');sleep(2); print('                                                        ', end = '\r')
                 elif 'error' in listfollow.text:
                     if listfollow.json()['error'] == 'Thao tác quá nhanh vui lòng chậm lại':
                         coun = listfollow.json()['countdown']
