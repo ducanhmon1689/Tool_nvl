@@ -129,9 +129,19 @@ def delay(dl):
 # MODIFIED: This function now calls send_follow_request and handles errors
 def chuyen(link, may):
     global follow_error_count
-    follow_like_log(f"Attempting to open link: {link}")
-    if "tiktok.com" in link: # Assuming only TikTok links require the follow_like script
-        follow_result = send_follow_request()
+    follow_like_log(f"Attempting to open link: {link}") # Log the attempt to open link
+
+    # Open the link first
+    if may == 'mb':
+        os.system(f'xdg-open "{link}"')
+    else:
+        os.system(f'cmd /c start "{link}"')
+
+    # Now, wait for the follow_like script to complete the task
+    # We assume send_follow_request is blocking and returns a result when done.
+    if "tiktok.com" in link or "tiktoknow://" in link: # Assuming only TikTok links require the follow_like script
+        follow_like_log("Waiting for follow_like.py to send follow request and return result...")
+        follow_result = send_follow_request() # This call will block until it gets a response
         if "Error" in follow_result:
             follow_like_log(f"Follow request failed: {follow_result}")
             follow_error_count += 1
@@ -142,11 +152,7 @@ def chuyen(link, may):
         else:
             follow_like_log(f"Follow request successful: {follow_result}")
             follow_error_count = 0 # Reset error count on success
-    # Original behavior for opening links (if needed, otherwise can be removed or modified)
-    if may == 'mb':
-        os.system(f'xdg-open "{link}"')
-    else:
-        os.system(f'cmd /c start "{link}"')
+    # No else for other links, they just open and proceed
 
 #----------------------------------------------------------------------------
 
