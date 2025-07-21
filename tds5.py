@@ -26,8 +26,8 @@ from time import strftime
 try:
     from follow_like import send_follow_request, log as follow_like_log
 except ImportError:
-    print(f"{red}Error: Could not import 'send_follow_request' or 'log' from 'follow_like.py'. "
-          f"Please ensure 'follow_like.py' is in the same directory.{trang}")
+    print(f"{red}Lỗi: Không thể nhập 'send_follow_request' hoặc 'log' từ 'follow_like.py'. "
+          f"Vui lòng đảm bảo 'follow_like.py' nằm cùng thư mục.{trang}")
     sys.exit(1)
 
 total = 0
@@ -129,30 +129,34 @@ def delay(dl):
 # MODIFIED: This function now calls send_follow_request and handles errors
 def chuyen(link, may):
     global follow_error_count
-    follow_like_log(f"Attempting to open link: {link}") # Log the attempt to open link
+    follow_like_log(f"Đang cố gắng mở liên kết: {link}") # Log the attempt to open link
 
-    # Open the link first
+    # Mở link trước
     if may == 'mb':
         os.system(f'xdg-open "{link}"')
     else:
         os.system(f'cmd /c start "{link}"')
 
-    # Now, wait for the follow_like script to complete the task
-    # We assume send_follow_request is blocking and returns a result when done.
-    if "tiktok.com" in link or "tiktoknow://" in link: # Assuming only TikTok links require the follow_like script
-        follow_like_log("Waiting for follow_like.py to send follow request and return result...")
-        follow_result = send_follow_request() # This call will block until it gets a response
+    # Chờ 3 giây sau khi mở link
+    print(f"{vang}Đang chờ 3 giây sau khi mở liên kết...{trang}", end='\r')
+    sleep(3)
+    print("                                                              ", end='\r') # Xóa dòng chờ
+
+    # Bây giờ, đợi script follow_like hoàn thành nhiệm vụ
+    if "tiktok.com" in link or "tiktoknow://" in link: # Giả sử chỉ các link TikTok mới cần script follow_like
+        follow_like_log("Đang đợi follow_like.py gửi yêu cầu follow và trả về kết quả...")
+        follow_result = send_follow_request() # Lệnh gọi này sẽ chặn cho đến khi nhận được phản hồi
         if "Error" in follow_result:
-            follow_like_log(f"Follow request failed: {follow_result}")
+            follow_like_log(f"Yêu cầu follow thất bại: {follow_result}")
             follow_error_count += 1
-            print(f"{red}Follow request failed. Consecutive errors: {follow_error_count}/{MAX_FOLLOW_ERRORS}{trang}")
+            print(f"{red}Yêu cầu follow thất bại. Lỗi liên tiếp: {follow_error_count}/{MAX_FOLLOW_ERRORS}{trang}")
             if follow_error_count >= MAX_FOLLOW_ERRORS:
-                print(f"{red}Maximum consecutive follow errors reached ({MAX_FOLLOW_ERRORS}). Stopping bot.{trang}")
-                sys.exit(1) # Exit the bot
+                print(f"{red}Đã đạt số lỗi follow liên tiếp tối đa ({MAX_FOLLOW_ERRORS}). Dừng bot.{trang}")
+                sys.exit(1) # Thoát bot
         else:
-            follow_like_log(f"Follow request successful: {follow_result}")
-            follow_error_count = 0 # Reset error count on success
-    # No else for other links, they just open and proceed
+            follow_like_log(f"Yêu cầu follow thành công: {follow_result}")
+            follow_error_count = 0 # Đặt lại số lỗi về 0 khi thành công
+    # Không có else cho các link khác, chúng chỉ mở và tiếp tục
 
 #----------------------------------------------------------------------------
 
