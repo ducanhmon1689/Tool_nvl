@@ -1,7 +1,9 @@
-import os
+import requests
 import time
+import os
+import sys
+import json
 import subprocess
-from datetime import datetime
 
 # Thiết lập thư mục log
 log_dir = os.path.join(os.path.dirname(__file__), 'log')
@@ -10,42 +12,43 @@ log_file = os.path.join(log_dir, 'follow_client.log')
 
 def log(message):
     """Ghi log vào console và file"""
-    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
     print(f"{timestamp} - {message}")
     with open(log_file, 'a', encoding='utf-8') as f:
         f.write(f"{timestamp} - {message}\n")
 
-def perform_action(action_type):
-    """Thực hiện hành động Follow trên TikTok sử dụng Termux API"""
+def get_device_id():
+    """Lấy device_id của thiết bị Android"""
     try:
-        if action_type.lower() != 'follow':
-            log(f"Hành động {action_type} không được hỗ trợ!")
-            return "Error: Unsupported action"
-        
-        # Giả lập nhấn nút Follow trên TikTok
-        # Tọa độ (x, y) cần điều chỉnh tùy thiết bị
-        x, y = 500, 600  # Tọa độ giả định cho nút Follow
-        cmd = f"termux-toast 'Thực hiện Follow' && input tap {x} {y}"
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-        
-        if result.returncode == 0:
-            log("Đã nhấn Follow thành công")
-            time.sleep(1)  # Đợi để đảm bảo hành động hoàn tất
-            return "Follow ok"
-        else:
-            log(f"Lỗi khi nhấn Follow: {result.stderr}")
-            return "Nhả follow"
+        result = subprocess.run(['getprop', 'ro.serialno'], capture_output=True, text=True, check=True)
+        device_id = result.stdout.strip()
+        log(f"Device ID: {device_id}")
+        return device_id
     except Exception as e:
-        log(f"Lỗi khi thực hiện Follow: {str(e)}")
-        return f"Error: {str(e)}"
+        log(f"Lỗi khi lấy device_id: {str(e)}")
+        return None
 
 def send_follow_request(url='http://10.0.0.2:8000/follow'):
-    """Hàm để tương thích với tds5.py, gọi perform_action và trả kết quả"""
-    # Vì chạy trên Termux, không cần gọi web server, gọi thẳng perform_action
-    result = perform_action('follow')
-    log(f"Kết quả: {result}")
-    return result
+    """Gửi yêu cầu Follow đến web server trên PC và nhận kết quả"""
+    try:
+        device_id = get_device_id()
+        if not device_id:
+            return "Error: Cannot get device_id"
+        headers = {'Content-Type': 'application/json'}
+        data = {'task': 'FOLLOW', 'device_id': device_id}
+        log(f"Đang gửi yêu cầu đến {url} với device_id: {device_id}")
+        response = requests.post(url, json=data, headers=headers, timeout=10)
+        response.raise_for_status()
+        result = response.json()
+        log(f"Kết quả từ server: {result}")
+        return result.get('result', 'Error: No result')
+    except Exception as e:
+        log(f"Lỗi khi gửi yêu cầu: {str(e)}")
+        return f"Error: {str(e)}"
+
+def main():
+    result = send_follow_request()
+    log(f"Kết quả cuối cùng: {result}")
 
 if __name__ == "__main__":
-    result = send_follow_request()
-    print(result)
+    main()
