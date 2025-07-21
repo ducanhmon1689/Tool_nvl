@@ -22,37 +22,33 @@ def get_device_id():
     try:
         result = subprocess.run(['getprop', 'ro.serialno'], capture_output=True, text=True, check=True)
         device_id = result.stdout.strip()
-        # log(f"Device ID: {device_id}") # Đã chú thích/xóa theo yêu cầu trước
+        log(f"Device ID: {device_id}")
         return device_id
     except Exception as e:
         log(f"Lỗi khi lấy device_id: {str(e)}")
-        return "Error: Cannot get device_id" # Trả về lỗi dạng string để TDS5 có thể bắt
+        return None
 
 def send_follow_request(url='http://10.0.0.2:8000/follow'):
     """Gửi yêu cầu Follow đến web server trên PC và nhận kết quả"""
     try:
         device_id = get_device_id()
-        if device_id.startswith("Error:"): # Kiểm tra lỗi từ get_device_id
-            return device_id
-
+        if not device_id:
+            return "Error: Cannot get device_id"
         headers = {'Content-Type': 'application/json'}
         data = {'task': 'FOLLOW', 'device_id': device_id}
-        # log(f"Đang gửi yêu cầu đến {url} với device_id: {device_id}") # Đã chú thích/xóa theo yêu cầu trước
+        log(f"Đang gửi yêu cầu đến {url} với device_id: {device_id}")
         response = requests.post(url, json=data, headers=headers, timeout=20)
-        response.raise_for_status() # Raises HTTPError for bad responses (4xx or 5xx)
+        response.raise_for_status()
         result = response.json()
-        # log(f"Kết quả từ server: {result}") # Đã chú thích/xóa theo yêu cầu trước
-        
-        # Đảm bảo trả về chuỗi "Follow ok" hoặc "Nhả follow" từ trường 'result'
-        # Hoặc một thông báo lỗi nếu trường 'result' không tồn tại
-        return result.get('result', 'Error: No "result" field from server')
-
-    except requests.exceptions.RequestException as e:
-        log(f"Lỗi khi gửi yêu cầu HTTP hoặc nhận phản hồi: {e}")
-        return f"Error: Request failed - {str(e)}"
-    except json.JSONDecodeError as e:
-        log(f"Lỗi giải mã JSON từ phản hồi: {e}. Phản hồi: {response.text if 'response' in locals() else 'Không có phản hồi'}")
-        return f"Error: JSON decode failed - {str(e)}"
+        log(f"Kết quả từ server: {result}")
+        return result.get('result', 'Error: No result')
     except Exception as e:
-        log(f"Lỗi không xác định trong send_follow_request: {e}")
-        return f"Error: Unexpected error - {str(e)}"
+        log(f"Lỗi khi gửi yêu cầu: {str(e)}")
+        return f"Error: {str(e)}"
+
+def main():
+    result = send_follow_request()
+    log(f"Kết quả cuối cùng: {result}")
+
+if __name__ == "__main__":
+    main()
