@@ -206,11 +206,11 @@ def process_device(username, token_tds, nhiem_vu, dl, nv_nhan):
                 if listfollow.json()['error'] == 'Thao tác quá nhanh vui lòng chậm lại':
                     coun = listfollow.json()['countdown']
                     with print_lock:
-                        print(f'{red}[{username}] Thử lại sau {vang}{str(round(coun, 3))} {red}giây', end='\r')
+                        print(f'{red}[{username}] Đang Get Nhiệm Vụ Follow, COUNTDOWN: {str(round(coun, 3))} ', end='\r')
                     delay(coun)  # Chờ hết thời gian countdown
                     with print_lock:
                         print(' ' * 50, end='\r')
-                    continue  # Tiếp tục vòng lặp sau khi chờ
+                    continue  # Tiếp tục vòng lặp sau khi chờ    
                 elif listfollow.json()['error'] == 'Vui lòng ấn NHẬN TẤT CẢ rồi sau đó tiếp tục làm nhiệm vụ để tránh lỗi!':
                     tds.nhan_xu('TIKTOK_FOLLOW_API', 'TIKTOK_FOLLOW')
                 else:
