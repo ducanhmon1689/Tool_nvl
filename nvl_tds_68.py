@@ -1,3 +1,37 @@
+import sys
+import subprocess
+import os
+
+# --- PHẦN KIỂM TRA VÀ CÀI ĐẶT THƯ VIỆN TỰ ĐỘNG ---
+print("Đang kiểm tra các thư viện cần thiết...")
+
+# Danh sách các thư viện cần thiết
+required_libraries = ['requests', 'pystyle']
+
+for lib in required_libraries:
+    try:
+        # Thử import thư viện
+        __import__(lib)
+        print(f"-> Thư viện '{lib}' đã được cài đặt.")
+    except ImportError:
+        # Nếu import lỗi, tiến hành cài đặt
+        print(f"-> Thư viện '{lib}' chưa có, đang tiến hành cài đặt...")
+        try:
+            # Sử dụng sys.executable để đảm bảo dùng đúng pip của phiên bản Python đang chạy
+            subprocess.check_call([sys.executable, "-m", "pip", "install", lib])
+            print(f"-> Đã cài đặt thành công '{lib}'.")
+        except subprocess.CalledProcessError:
+            # Báo lỗi nếu cài đặt không thành công
+            print(f"LỖI: Không thể tự động cài đặt thư viện '{lib}'.")
+            print(f"Vui lòng mở Command Prompt (cmd) hoặc Terminal và chạy lệnh sau:")
+            print(f"pip install {lib}")
+            sys.exit(1) # Thoát chương trình nếu không cài được thư viện quan trọng
+
+print("Tất cả thư viện cần thiết đã sẵn sàng!\n")
+# --- KẾT THÚC PHẦN KIỂM TRA THƯ VIỆN ---
+
+
+# --- PHẦN MÃ BOT NGUYÊN BẢN BẮT ĐẦU TỪ ĐÂY ---
 den = "\033[1;90m"
 luc = "\033[1;32m"
 trang = "\033[1;37m"
@@ -14,8 +48,6 @@ thanh_dep= red + "[" + trang+ "=.=" + red + "] " + trang + "=> "
 
 from pystyle import Add, Center, Anime, Colors, Colorate, Write, System
 import requests, json
-import os
-import sys
 from sys import platform
 from time import sleep
 from datetime import datetime
@@ -290,7 +322,6 @@ def main():
                                 print(f'{vang}[{trang}{dem}{vang}] {red}| {lam}{tg} {red}| {Colorate.Horizontal(Colors.yellow_to_red, "TIM")} {red}| {trang}{id} {red}|')
                                 delay(dl)
                                 if dem % nv_nhan == 0:
-                                    # <<< START UPDATE >>>
                                     # Lần thử nhận xu thứ 1
                                     nhan = tds.nhan_xu('TIKTOK_LIKE_API', 'TIKTOK_LIKE')
                                     # Nếu thất bại, thử lại lần 2 sau 5 giây
@@ -312,7 +343,6 @@ def main():
                                                 ntool = 1
                                                 break
                                             bongoc(14)
-                                    # <<< END UPDATE >>>
             if ntool==1 or ntool==2:break
             # Nhiệm vụ Follow (chính)
             if '2' in nhiem_vu:
@@ -352,7 +382,6 @@ def main():
                                 print(f'{vang}[{trang}{dem}{vang}] {red}| {lam}{tg} {red}| {Colorate.Horizontal(Colors.yellow_to_red, "FOLLOW")} {red}| {trang}{id} {red}|')
                                 delay(dl)
                                 if dem % nv_nhan == 0:
-                                    # <<< START UPDATE >>>
                                     # Lần thử nhận xu thứ 1
                                     nhan = tds.nhan_xu('TIKTOK_FOLLOW_API', 'TIKTOK_FOLLOW')
                                     # Nếu thất bại, thử lại lần 2 sau 5 giây
@@ -374,7 +403,6 @@ def main():
                                                 ntool = 1
                                                 break
                                             bongoc(14)
-                                    # <<< END UPDATE >>>
             if ntool==1 or ntool==2:break
             # Nhiệm vụ Follow Tiktok Now
             if '3' in nhiem_vu:
@@ -419,7 +447,6 @@ def main():
                                 print(f'{vang}[{trang}{dem}{vang}] {red}| {lam}{tg} {red}| {Colorate.Horizontal(Colors.yellow_to_red, "FOLLOW_TIKTOK_NOW")} {red}| {trang}{id} {red}|')
                                 delay(dl)
                                 if dem % nv_nhan == 0:
-                                    # <<< START UPDATE >>>
                                     # Lần thử nhận xu thứ 1
                                     nhan = tds.nhan_xu('TIKTOK_FOLLOW_API', 'TIKTOK_FOLLOW')
                                     # Nếu thất bại, thử lại lần 2 sau 5 giây
@@ -441,5 +468,4 @@ def main():
                                                 ntool = 1
                                                 break
                                             bongoc(14)
-                                    # <<< END UPDATE >>>
 main()
