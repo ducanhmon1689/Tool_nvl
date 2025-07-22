@@ -20,22 +20,6 @@ from sys import platform
 from time import sleep
 from datetime import datetime
 from time import strftime
-# Kiểm tra và cài đặt thư viện requests
-try:
-    import requests
-except ImportError:
-    print("Đang cài đặt thư viện requests...")
-    os.system("pip install requests")
-    import requests
-
-# Kiểm tra và cài đặt thư viện pystyle
-try:
-    from pystyle import Colors, Colorate, Write, Center, Box
-except ImportError:
-    print("Đang cài đặt thư viện pystyle...")
-    os.system("pip install pystyle")
-    from pystyle import Colors, Colorate, Write, Center, Box
-
 
 # Khai báo biến toàn cục ở đây
 total = 0
