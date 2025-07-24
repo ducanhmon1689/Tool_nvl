@@ -261,7 +261,7 @@ def main():
     # Cài đặt mặc định theo yêu cầu của bạn
     nhiem_vu = '2'  # Tự động chọn nhiệm vụ Follow
     nv_nhan = 8     # Sau 8 job thì nhận xu
-    dl = 10         # Thời gian delay là 10 giây
+    dl = 6         # Thời gian delay là 10 giây
 
     print(f'{thanh_xau}{luc}Nhiệm Vụ Đã Chọn Mặc Định: {vang}Follow')
     print(f'{thanh_xau}{luc}Sau {vang}{nv_nhan} {luc}Nhiệm Vụ Thì Nhận Xu')
@@ -392,10 +392,9 @@ def main():
                                         # Nếu vẫn thất bại, hiển thị menu
                                         if nhan == 0:
                                             print(luc+'Nhận xu thất bại lần 2. Acc Tiktok của bạn ổn chứ?')
-                                            print(f'{thanh_xau}{luc}Nhập {red}[{vang}1{red}] {luc}Để Thay Nhiệm Vụ ')
-                                            print(f'{thanh_xau}{luc}Nhập {red}[{vang}2{red}] {luc}Thay Acc Tiktok ')
-                                            print(f'{thanh_xau}{luc}Nhấn {red}[{vang}Enter{red}] {luc}Để Tiếp Tục')
-                                            chon=input(f'{thanh_xau}{luc}Nhập {trang}===>: {vang}')
+                                            print(f'{thanh_xau}{luc}Tự động tiếp tục sau 2 giây...')
+                                            sleep(2)  # Chờ 2 giây để người dùng đọc thông báo
+                                            chon = ''  # Tự động gán giá trị rỗng, tương đương nhấn Enter
                                             if chon == '1':
                                                 ntool=2
                                                 break
@@ -457,10 +456,9 @@ def main():
                                         # Nếu vẫn thất bại, hiển thị menu
                                         if nhan == 0:
                                             print(luc+'Nhận xu thất bại lần 2. Acc Tiktok của bạn ổn chứ?')
-                                            print(f'{thanh_xau}{luc}Nhập {red}[{vang}1{red}] {luc}Để Thay Nhiệm Vụ ')
-                                            print(f'{thanh_xau}{luc}Nhập {red}[{vang}2{red}] {luc}Thay Acc Tiktok ')
-                                            print(f'{thanh_xau}{luc}Nhấn {red}[{vang}Enter{red}] {luc}Để Tiếp Tục')
-                                            chon=input(f'{thanh_xau}{luc}Nhập {trang}===>: {vang}')
+                                            print(f'{thanh_xau}{luc}Tự động tiếp tục sau 2 giây...')
+                                            sleep(2)  # Chờ 2 giây để người dùng đọc thông báo
+                                            chon = ''  # Tự động gán giá trị rỗng, tương đương nhấn Enter
                                             if chon == '1':
                                                 ntool=2
                                                 break
